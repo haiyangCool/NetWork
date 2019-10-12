@@ -70,25 +70,25 @@ protocol VVAPIManagerDelegate: NSObjectProtocol {
     func apiAddress() -> String
     
     /// service id now this identifier just as log
-    func serviceIdentifier() -> String 
+    func serviceIdentifier() -> String
     
+    /// params reformer
+    /// - Parameter params: origin params
+    func reformerParams(_ params:[String:String?]?) -> [String:String?]?
     
+  
 }
 
 /** Optional protocol method
  */
 extension VVAPIManagerDelegate {
     
-    /// params reformer
-    /// - Parameter params: origin params
+    
+    /// Defaut implement
+    /// - Parameter params:
     func reformerParams(_ params:[String:String?]?) -> [String:String?]? {
     
         return params
-    }
-    
-    /// api response cache
-    func cachePolicy() -> VVAPIManagerCachePolicy {
-        return .none
     }
     
 }
@@ -109,15 +109,24 @@ protocol VVAPIManagerService: NSObjectProtocol {
     /// - Parameter type: error type
     func isHandleApiError(_ manager: VVBaseApiManager,errorType type:VVAPIManagerErrorType) -> Bool
     
+    
+    /// this method has be implement by default
+    /// service:  generator URLRequest with api\params\and Request Ttpe
+      /// - Parameter apiName: apiAddress
+      /// - Parameter param: param (optional)
+      /// - Parameter type: request type
+    func generatorRequestWith(_ apiName: String, apiParams param:[String:String?]?,timeoutInterval timeInterval:TimeInterval, reuqestType type: VVAPIManagerRequestType) -> URLRequest
+    
+    func paramsGET(_ params:[String:String?]?) -> String
+    
+    func paramsPOST(_ params:[String:String?]?) -> Data?
+    
 }
 
 /** Service Extension*/
 extension VVAPIManagerService {
     
-    /// service:  generator URLRequest with api\params\and Request Ttpe
-    /// - Parameter apiName: apiAddress
-    /// - Parameter param: param (optional)
-    /// - Parameter type: request type
+  
     func generatorRequestWith(_ apiName: String, apiParams param:[String:String?]?,timeoutInterval timeInterval:TimeInterval, reuqestType type: VVAPIManagerRequestType) -> URLRequest {
         
         var request:URLRequest?
@@ -218,7 +227,31 @@ protocol VVAPIManagerLoadNextPage {
 
 /** Interceptor (AOP)
  */
-protocol VVAPIManagerInterceptor:NSObjectProtocol {}
+protocol VVAPIManagerInterceptor:NSObjectProtocol {
+    
+    // all method has default implements
+    /// before perform api
+    func shouldPerformApiWithParams(_ manager:VVBaseApiManager,params:[String:String?]?) ->Bool
+       
+    /// after perform api
+    func afterPerformApiWithParams(_ manager:VVBaseApiManager,params:[String:String?]?)
+       
+    /// before perform success
+    func beforePerformSuccessWithResponse(_ manager:VVBaseApiManager,response:VVURLResponse?)
+       
+    /// after perform success
+    func afterPerformSuccessWithResponse(_ manager:VVBaseApiManager,response:VVURLResponse?)
+       
+       
+    /// before perform faild
+    func beforePerformFaildWithResponse(_ manager:VVBaseApiManager,response:VVURLResponse?) -> VVAPIManagerErrorType
+       
+    /// after perform faild
+    func afterPerformFaildWithResponse(_ manager:VVBaseApiManager, response:VVURLResponse?)
+       
+    /// did receive service response data
+    func didReceiveResponse(_ manager:VVBaseApiManager, response:VVURLResponse?)
+}
 
 extension VVAPIManagerInterceptor {
     
